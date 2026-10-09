@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('@/fonts/DMSans-VariableFont_opsz,wght.ttf') format('ttf');
+  font-style: normal;
+  font-weight: 100 1000;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('@/fonts/DMSans-Italic-VariableFont_opsz,wght.ttf') format('ttf');
+  font-style: italic;
+  font-weight: 100 1000;
+}
+
+@theme {
+  /*Colors*/
+  --color-neutral-900: #02012C;
+  --color-neutral-800: #262540;
+  --color-neutral-700: #302F4A;
+  --color-neutral-600: #3C3B3E;
+  --color-neutral-300: #ACACB7;
+  --color-neutral-200: #D4D3D9;
+  --color-neutral-0: #FFFFFF;
+  --color-orange-500: #FF820A;
+  --color-blue-500: #4658D9;
+  --color-blue-700: #2B1B9C;
+  /*Fonts*/
+  --font-sans: 'DM Sans';
+  --font-cursive: 'Bricolage Grotesque';
+  /*Typography*/
+  --text-preset-1: 6rem;
+  --text-preset-2: 3.25rem;
+  --text-preset-3: 2rem;
+  --text-preset-4: 1.75rem;
+  --text-preset-5: 1.25rem;
+  --text-preset-5m: 1.25rem;
+  --text-preset-6: 1.125rem;
+  --text-preset-7: 1rem;
+  --text-preset-8: 0.875rem;
+  /*Radii*/
+  --radius-0: 0;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-full: 9999px;
+}
+
+.text-preset-1 {
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.text-preset-2 {
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-3 {
+  font-weight: 300;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.text-preset-4 {
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-5 {
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-5m {
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-6 {
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-7 {
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.text-preset-8 {
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+html {
+  width: 100vw
+}
+
+/*--font-weight-thin: 100;*/
+/*--font-weight-extralight: 200;*/
+/*--font-weight-light: 300;*/
+/*--font-weight-normal: 400;*/
+/*--font-weight-medium: 500;*/
+/*--font-weight-semibold: 600;*/
+/*--font-weight-bold: 700;*/
+/*--font-weight-extrabold: 800;*/
+/*--font-weight-black: 900;*/
+
+
+
