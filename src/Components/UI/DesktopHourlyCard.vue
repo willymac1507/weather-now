@@ -2,6 +2,7 @@
 import ButtonComponent from '@/Components/UI/ButtonComponent.vue'
 import HourForecast from '@/Components/UI/HourForecast.vue'
 import { computed } from 'vue'
+import { getWeather } from '@/Composables/GetWeatherData'
 
 interface Props {
   day: string
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const weather = await getWeather(52.6141, 1.2991)
 
 const hours = computed(() => {
   const result: number[] = []

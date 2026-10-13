@@ -8,7 +8,9 @@ import DesktopContent from '@/Layouts/DesktopContent.vue'
   <div class="w-screen h-280 px-28 py-12 bg-neutral-900 text-neutral-0">
     <DesktopNav />
     <DesktopHeader />
-    <DesktopContent />
+    <Suspense>
+      <DesktopContent />
+    </Suspense>
   </div>
 </template>
 
