@@ -21,6 +21,8 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
       'precipitation',
       'weather_code',
     ],
+    daily: ['temperature_2m_max', 'temperature_2m_min', 'weather_code'],
+    forecast_days: 8,
   }
   const url = 'https://api.open-meteo.com/v1/forecast'
   const responses = await fetchWeatherApi(url, params)
@@ -36,6 +38,92 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
 
   const current = response ? response.current()! : null
   const hourly = response ? response.hourly()! : null
+  const daily = response ? response.daily()! : null
+
+  const hourlyTimes = hourly
+    ? Array.from(
+        { length: (Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval() },
+        (_, i) =>
+          new Date(
+            (Number(hourly.time()) +
+              i * hourly.interval() +
+              (utcOffsetSeconds ? utcOffsetSeconds : 0)) *
+              1000,
+          ),
+      )
+    : null
+
+  const hourlyTemps: number[] | null = hourly ? makeArray(hourly.variables(0)!.valuesArray()) : null
+
+  const hourlyRealFeel: number[] | null = hourly
+    ? makeArray(hourly.variables(1)!.valuesArray())
+    : null
+
+  const hourlyHumidity: number[] | null = hourly
+    ? makeArray(hourly.variables(2)!.valuesArray())
+    : null
+
+  const hourlyWindSpeed: number[] | null = hourly
+    ? makeArray(hourly.variables(3)!.valuesArray())
+    : null
+
+  const hourlyPrecipitation: number[] | null = hourly
+    ? makeArray(hourly.variables(4)!.valuesArray())
+    : null
+
+  const hourlyWeatherCode: number[] | null = hourly
+    ? makeArray(hourly.variables(5)!.valuesArray())
+    : null
+
+  const hourlyWeather = hourlyTimes
+    ? hourlyTimes.map((hourlyTime, index) => ({
+        date: hourlyTime,
+        temperature: hourlyTemps ? hourlyTemps[index] : null,
+        real_feel: hourlyRealFeel ? hourlyRealFeel[index] : null,
+        humidity: hourlyHumidity ? hourlyHumidity[index] : null,
+        wind_speed: hourlyWindSpeed ? hourlyWindSpeed[index] : null,
+        precipitation: hourlyPrecipitation ? hourlyPrecipitation[index] : null,
+        weather_code: hourlyWeatherCode ? hourlyWeatherCode[index] : null,
+      }))
+    : null
+
+  const dailyTimes: Date[] | null = daily
+    ? Array.from(
+        { length: (Number(daily.timeEnd()) - Number(daily.time())) / daily.interval() },
+        (_, i) =>
+          new Date(
+            (Number(daily.time()) +
+              i * daily.interval() +
+              (utcOffsetSeconds ? utcOffsetSeconds : 0)) *
+              1000,
+          ),
+      )
+    : null
+
+  const dailyMaxTemp: number[] | null = daily ? makeArray(daily.variables(0)!.valuesArray()) : null
+
+  const dailyMinTemp: number[] | null = daily ? makeArray(daily.variables(1)!.valuesArray()) : null
+
+  const dailyWeatherCode: number[] | null = daily
+    ? makeArray(daily.variables(2)!.valuesArray())
+    : null
+
+  const dailyWeather = dailyTimes
+    ? dailyTimes.map((hourlyTime, index) => ({
+        date: hourlyTime,
+        temperature_max: dailyMaxTemp ? dailyMaxTemp[index] : null,
+        temperature_min: dailyMinTemp ? dailyMinTemp[index] : null,
+        weather_code: dailyWeatherCode ? dailyWeatherCode[index] : null,
+      }))
+    : null
+
+  dailyWeather ? dailyWeather.shift() : null
+
+  console.log(hourlyWeather)
+
+  function makeArray(array: Float32Array<ArrayBufferLike> | null): number[] | null {
+    return hourly ? Array.prototype.slice.call(array) : null
+  }
 
   // Note: The order of weather variables in the URL query and the indices below need to match!
 
@@ -45,34 +133,16 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
           time: new Date(
             (Number(current.time()) + (utcOffsetSeconds ? utcOffsetSeconds : 0)) * 1000,
           ),
-          temperature_2m: current.variables(0)!.value(),
-          relative_humidity_2m: current.variables(1)!.value(),
-          apparent_temperature: current.variables(2)!.value(),
-          wind_speed_10m: current.variables(3)!.value(),
+          temperature: current.variables(0)!.value(),
+          humidity: current.variables(1)!.value(),
+          real_feel: current.variables(2)!.value(),
+          wind_speed: current.variables(3)!.value(),
           precipitation: current.variables(4)!.value(),
           weather_code: current.variables(5)!.value(),
         }
       : null,
-    hourly: hourly
-      ? {
-          time: Array.from(
-            { length: (Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval() },
-            (_, i) =>
-              new Date(
-                (Number(hourly.time()) +
-                  i * hourly.interval() +
-                  (utcOffsetSeconds ? utcOffsetSeconds : 0)) *
-                  1000,
-              ),
-          ),
-          temperature_2m: hourly.variables(0)!.valuesArray(),
-          apparent_temperature: hourly.variables(1)!.valuesArray(),
-          relative_humidity_2m: hourly.variables(2)!.valuesArray(),
-          wind_speed_10m: hourly.variables(3)!.valuesArray(),
-          precipitation: hourly.variables(4)!.valuesArray(),
-          weather_code: hourly.variables(5)!.valuesArray(),
-        }
-      : null,
+    hourly: hourlyWeather ? hourlyWeather : null,
+    daily: dailyWeather ? dailyWeather : null,
   }
 }
 

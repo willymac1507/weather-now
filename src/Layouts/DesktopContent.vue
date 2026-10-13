@@ -5,20 +5,34 @@ import DesktopConditionsCard from '@/Components/UI/DesktopConditionsCard.vue'
 import DesktopDailyCard from '@/Components/UI/DesktopDailyCard.vue'
 import DesktopHourlyCard from '@/Components/UI/DesktopHourlyCard.vue'
 import { getLocation, getWeather } from '@/Composables/GetWeatherData.ts'
-import { computed, ref } from 'vue'
+import { computed, type Ref, ref, type UnwrapRef } from 'vue'
 import type { Location, LocationArray, WeatherData } from '@/Types/API.ts'
+import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
+import { format } from 'date-fns'
 
 const searchField = ref()
 const results = ref<LocationArray>()
 // const loading = ref(false)
 const error = ref()
 const showDropdown = computed(() => (results.value ? results.value.length > 0 : false))
-let weather: WeatherData = <WeatherData>await getWeather(52.6141, 1.2991)
-
-const current = weather.current
-const hourly = weather.hourly
-let myLocation = 'Berlin, DE'
-
+const weather: Ref<UnwrapRef<WeatherData>, UnwrapRef<WeatherData> | WeatherData> = ref(
+  await getWeather(52.6141, 1.2991),
+)
+console.log(weather.value)
+const current = computed(() => weather.value.current)
+const hourly = computed(() => weather.value.hourly)
+const daily = computed(() => weather.value.daily)
+const myLocation = ref('Berlin, DE')
+const todaysDate = computed(() =>
+  current.value
+    ? new Date(current.value.time).toLocaleDateString('en-GB', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null,
+)
 async function searchLocation() {
   if (searchField.value) {
     error.value = null
@@ -36,17 +50,15 @@ async function searchLocation() {
 
 async function selectLocation(location: Location) {
   searchField.value = `${location.name}, ${location.country}`
-  myLocation = searchField.value
+  myLocation.value = searchField.value
   results.value = undefined
   await getWeather(location.lat, location.lon).then((data) => {
     if (!data) {
     } else {
-      weather = data
+      weather.value = data
     }
   })
 }
-
-console.log(results.value, current, hourly)
 </script>
 
 <template>
@@ -92,66 +104,44 @@ console.log(results.value, current, hourly)
   </div>
   <div class="w-full max-w-304 flex flex-row gap-8 justify-center">
     <div class="basis-2/3 flex flex-col max-w-200">
-      <DesktopHero icon-url="/images/icon-sunny.webp">
+      <DesktopHero
+        :icon-url="current ? getWeatherIcon(current.weather_code) : '/images/icon-sunny.webp'"
+      >
         <template #location>{{ myLocation }}</template>
-        <template #date>Tuesday, Aug 5, 2025</template>
-        <template #temperature>25°</template>
+        <template #date>{{ todaysDate }}</template>
+        <template #temperature>{{ current ? Math.round(current.temperature) : null }}°</template>
       </DesktopHero>
       <div class="flex flex-row gap-8 max-w-200 h-29.5 mb-2.5">
         <DesktopConditionsCard>
           <template #heading>Feels Like</template>
-          25°
+          {{ current ? Math.round(current.real_feel) : null }}°
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Humidity</template>
-          46%
+          {{ current ? Math.round(current.humidity) : null }}%
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Wind</template>
-          14 km/h
+          {{ current ? Math.round(current.wind_speed) : null }} km/h
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Precipitation</template>
-          0 mm
+          {{ current ? Math.round(current.precipitation) : null }} mm
         </DesktopConditionsCard>
       </div>
       <p class="text-preset-5 mb-5">Daily forecast</p>
-      <div class="flex flex-row gap-4 h-41.25">
-        <DesktopDailyCard icon-url="/images/icon-rain.webp">
-          <template #day>Tue</template>
-          <template #maxTemp>25°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-drizzle.webp">
-          <template #day>Wed</template>
-          <template #maxTemp>21°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-sunny.webp">
-          <template #day>Thu</template>
-          <template #maxTemp>24°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-partly-cloudy.webp">
-          <template #day>Fri</template>
-          <template #maxTemp>25°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-storm.webp">
-          <template #day>Sat</template>
-          <template #maxTemp>21°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-snow.webp">
-          <template #day>Sun</template>
-          <template #maxTemp>25°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
-        <DesktopDailyCard icon-url="/images/icon-fog.webp">
-          <template #day>Mon</template>
-          <template #maxTemp>19°</template>
-          <template #minTemp>15°</template>
-        </DesktopDailyCard>
+      <div v-if="daily" class="flex flex-row gap-4 h-41.25">
+        <div v-for="day in daily" :key="format(day.date, 't')" class="grow">
+          <DesktopDailyCard :icon-url="day.weather_code ? getWeatherIcon(day.weather_code) : ''">
+            <template #day>{{ format(day.date, 'iii') }}</template>
+            <template #maxTemp
+              >{{ day.temperature_max ? Math.round(day.temperature_max) : '' }}°</template
+            >
+            <template #minTemp
+              >{{ day.temperature_min ? Math.round(day.temperature_min) : '' }}°</template
+            >
+          </DesktopDailyCard>
+        </div>
       </div>
     </div>
     <div class="grow">
