@@ -12,10 +12,6 @@ export type WeatherData = {
     | {
         date: Date
         temperature: number | null | undefined
-        humidity: number | null | undefined
-        real_feel: number | null | undefined
-        wind_speed: number | null | undefined
-        precipitation: number | null | undefined
         weather_code: number | null | undefined
       }[]
     | null

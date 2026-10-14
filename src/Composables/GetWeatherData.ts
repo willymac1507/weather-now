@@ -5,14 +5,7 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
   const params = {
     latitude: lat,
     longitude: lng,
-    hourly: [
-      'temperature_2m',
-      'apparent_temperature',
-      'relative_humidity_2m',
-      'wind_speed_10m',
-      'precipitation',
-      'weather_code',
-    ],
+    hourly: ['temperature_2m', 'weather_code'],
     current: [
       'temperature_2m',
       'relative_humidity_2m',
@@ -55,34 +48,14 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
 
   const hourlyTemps: number[] | null = hourly ? makeArray(hourly.variables(0)!.valuesArray()) : null
 
-  const hourlyRealFeel: number[] | null = hourly
-    ? makeArray(hourly.variables(1)!.valuesArray())
-    : null
-
-  const hourlyHumidity: number[] | null = hourly
-    ? makeArray(hourly.variables(2)!.valuesArray())
-    : null
-
-  const hourlyWindSpeed: number[] | null = hourly
-    ? makeArray(hourly.variables(3)!.valuesArray())
-    : null
-
-  const hourlyPrecipitation: number[] | null = hourly
-    ? makeArray(hourly.variables(4)!.valuesArray())
-    : null
-
   const hourlyWeatherCode: number[] | null = hourly
-    ? makeArray(hourly.variables(5)!.valuesArray())
+    ? makeArray(hourly.variables(1)!.valuesArray())
     : null
 
   const hourlyWeather = hourlyTimes
     ? hourlyTimes.map((hourlyTime, index) => ({
         date: hourlyTime,
         temperature: hourlyTemps ? hourlyTemps[index] : null,
-        real_feel: hourlyRealFeel ? hourlyRealFeel[index] : null,
-        humidity: hourlyHumidity ? hourlyHumidity[index] : null,
-        wind_speed: hourlyWindSpeed ? hourlyWindSpeed[index] : null,
-        precipitation: hourlyPrecipitation ? hourlyPrecipitation[index] : null,
         weather_code: hourlyWeatherCode ? hourlyWeatherCode[index] : null,
       }))
     : null

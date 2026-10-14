@@ -115,6 +115,10 @@
   letter-spacing: 0;
 }
 
+#loading-overlay {
+  pointer-events: all;
+}
+
 html {
   width: 100vw
 }

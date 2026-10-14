@@ -1,43 +1,85 @@
 <script lang="ts" setup>
 import ButtonComponent from '@/Components/UI/ButtonComponent.vue'
 import HourForecast from '@/Components/UI/HourForecast.vue'
-import { computed } from 'vue'
-import { getWeather } from '@/Composables/GetWeatherData'
+import { computed, ref } from 'vue'
+import type { WeatherData } from '@/Types/API.ts'
+import { addDays, format, isSameDay } from 'date-fns'
+import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
 
 interface Props {
-  day: string
-  startTime: number
+  hourly: WeatherData['hourly']
+  currentDate: Date
 }
 
 const props = defineProps<Props>()
 
-const weather = await getWeather(52.6141, 1.2991)
+const currentDay = ref(props.currentDate)
+const selectedDay = ref(currentDay.value)
+
+const dropdownDays = computed(() => {
+  const days = []
+  for (let i = 0; i < 7; i++) {
+    days.push(addDays(currentDay.value, i))
+  }
+  return days
+})
+
+const dayDropdown = ref(false)
 
 const hours = computed(() => {
-  const result: number[] = []
-  for (let i = props.startTime; i < props.startTime + 8; i++) {
-    if (i > 24) {
-      i -= 24
-    }
-    result.push(i)
-  }
+  const result: WeatherData['hourly'] =
+    props.hourly?.filter((hour) =>
+      isSameDay(props.currentDate, selectedDay.value)
+        ? hour.date > props.currentDate && isSameDay(hour.date, selectedDay.value)
+        : isSameDay(hour.date, selectedDay.value),
+    ) ?? []
   return result
 })
+
+function changeDay() {
+  dayDropdown.value = true
+}
+
+function selectDay(date: Date) {
+  selectedDay.value = date
+  dayDropdown.value = false
+}
 </script>
 
 <template>
   <div class="flex flex-col bg-neutral-800 rounded-20 h-full w-full p-6 gap-2.5">
-    <div class="flex flex-row justify-between items-center w-full h-9.25">
+    <div class="relative flex flex-row justify-between items-center w-full h-9.25">
       <div class="text-preset-5">Hourly Forecast</div>
-      <ButtonComponent class="bg-neutral-600!">
-        <div>{{ day }}</div>
+      <ButtonComponent class="bg-neutral-600! basis-5/12" @click="changeDay">
+        <div>{{ format(selectedDay, 'EEEE') }}</div>
         <div>
           <img alt="" src="/images/icon-dropdown.svg" />
         </div>
       </ButtonComponent>
+
+      <ul
+        v-if="dayDropdown"
+        class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full z-50 overflow-hidden rounded-b-xl"
+      >
+        <li v-for="day in dropdownDays" :key="day">
+          <button
+            class="w-full px-4 py-3 text-left hover:bg-neutral-600"
+            type="button"
+            @click="selectDay(day)"
+          >
+            <span class="block font-medium text-neutral-0"> {{ day }} </span>
+          </button>
+        </li>
+      </ul>
     </div>
-    <div v-for="hour in hours" :key="hour">
-      <HourForecast :temp="20" :time="hour" iconUrl="/images/icon-overcast.webp" />
+    <div class="overflow-y-scroll flex flex-col gap-2.5">
+      <div v-for="hour in hours" :key="format(hour.date, 'T')">
+        <HourForecast
+          :iconUrl="getWeatherIcon(hour.weather_code ?? 1)"
+          :temp="Math.ceil(hour.temperature ?? 20)"
+          :time="format(hour.date, 'HH:mm')"
+        />
+      </div>
     </div>
   </div>
 </template>
