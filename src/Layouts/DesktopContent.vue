@@ -14,12 +14,10 @@ const searchField = ref()
 const results = ref<LocationArray>()
 const error = ref()
 const showDropdown = computed(() => (results.value ? results.value.length > 0 : false))
-const weather: Ref<UnwrapRef<WeatherData>, UnwrapRef<WeatherData> | WeatherData> = ref(
-  await getWeather(52.6141, 1.2991),
-)
-const current = computed(() => weather.value.current)
-const hourly = computed(() => weather.value.hourly)
-const daily = computed(() => weather.value.daily)
+const weather: Ref<UnwrapRef<WeatherData> | null> = ref(null)
+const current = computed(() => weather.value?.current)
+const hourly = computed(() => weather.value?.hourly)
+const daily = computed(() => weather.value?.daily)
 const myLocation = ref('Berlin, DE')
 const todaysDate = computed(() =>
   current.value
@@ -31,8 +29,13 @@ const todaysDate = computed(() =>
       })
     : null,
 )
-const currentDateTime = computed(() => new Date())
+
+const currentDateTime = computed(
+  () => new Date(current.value ? current.value.time : new Date().getTime()),
+)
 const loading = ref(true)
+
+const isItDayTime = ref(false)
 
 const promises = [weather]
 
@@ -107,12 +110,10 @@ async function selectLocation(location: Location) {
             type="button"
             @click="selectLocation(result)"
           >
-            <span class="block font-medium text-neutral-0"> {{ result.name }} </span>
-            <span v-if="result.state" class="block text-sm text-neutral-200">
-              {{ result.state }}
-            </span>
-            <span v-if="result.country" class="block text-sm text-neutral-300">
-              {{ result.country }}
+            <span class="font-medium text-neutral-0"> {{ result.name }} </span>
+            <span v-if="result.state" class="text-sm text-neutral-200"> - {{ result.state }} </span>
+            <span v-if="result.country" class="text-sm text-neutral-300">
+              - {{ result.country }}
             </span>
           </button>
         </li>
@@ -125,16 +126,17 @@ async function selectLocation(location: Location) {
     </ButtonComponent>
   </div>
   <!-- Main Content -->
-  <div class="w-full max-w-304 flex flex-row gap-8 justify-center max-h-164">
+  <div v-if="weather" class="w-full max-w-304 flex flex-row gap-8 justify-center max-h-164">
     <div class="basis-2/3 flex flex-col max-w-200">
       <!-- Hero -->
       <DesktopHero
-        :icon-url="current ? getWeatherIcon(current.weather_code) : '/images/icon-sunny.webp'"
+        :icon-url="getWeatherIcon(current?.weather_code, !isItDayTime) ?? '/icons/no-data.png'"
       >
         <template #location>{{ myLocation }}</template>
         <template #date>{{ todaysDate }}</template>
         <template #temperature>{{ current ? Math.round(current.temperature) : null }}°</template>
       </DesktopHero>
+
       <!-- Current Conditions -->
       <div class="flex flex-row gap-8 max-w-200 h-29.5 mb-2.5">
         <DesktopConditionsCard>
@@ -158,7 +160,9 @@ async function selectLocation(location: Location) {
       <p class="text-preset-5 mb-5">Daily forecast</p>
       <div v-if="daily" class="flex flex-row gap-4 h-41.25">
         <div v-for="day in daily" :key="format(day.date, 't')" class="grow">
-          <DesktopDailyCard :icon-url="day.weather_code ? getWeatherIcon(day.weather_code) : ''">
+          <DesktopDailyCard
+            :icon-url="getWeatherIcon(day.weather_code, false) ?? '/icons/no-data.png'"
+          >
             <template #day>{{ format(day.date, 'iii') }}</template>
             <template #maxTemp
               >{{ day.temperature_max ? Math.round(day.temperature_max) : '' }}°</template
@@ -172,7 +176,12 @@ async function selectLocation(location: Location) {
     </div>
     <!-- Hourly Forecast -->
     <div class="grow">
-      <DesktopHourlyCard :currentDate="currentDateTime" :hourly="hourly" />
+      <DesktopHourlyCard
+        v-model="isItDayTime"
+        :currentDate="currentDateTime"
+        :hourly="hourly"
+        :isNight="!isItDayTime"
+      />
     </div>
   </div>
 </template>

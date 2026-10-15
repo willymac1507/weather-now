@@ -9,11 +9,14 @@ import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
 interface Props {
   hourly: WeatherData['hourly']
   currentDate: Date
+  isNight: boolean
 }
+
+const model = defineModel<boolean>()
 
 const props = defineProps<Props>()
 
-const currentDay = ref(props.currentDate)
+const currentDay = computed(() => props.currentDate)
 const selectedDay = ref(currentDay.value)
 
 const dropdownDays = computed(() => {
@@ -35,6 +38,10 @@ const hours = computed(() => {
     ) ?? []
   return result
 })
+
+if (hours.value[0]) {
+  model.value = !!hours.value[0].is_day
+}
 
 function changeDay() {
   dayDropdown.value = true
@@ -75,7 +82,7 @@ function selectDay(date: Date) {
     <div class="overflow-y-scroll flex flex-col gap-2.5">
       <div v-for="hour in hours" :key="format(hour.date, 'T')">
         <HourForecast
-          :iconUrl="getWeatherIcon(hour.weather_code ?? 1)"
+          :iconUrl="getWeatherIcon(hour.weather_code ?? 0, isNight) ?? '/icons/no-data.png'"
           :temp="Math.ceil(hour.temperature ?? 20)"
           :time="format(hour.date, 'HH:mm')"
         />

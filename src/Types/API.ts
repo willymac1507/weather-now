@@ -1,7 +1,11 @@
 export type WeatherData = {
+  utcOffsetSeconds: number
+  timezone: string
+  timezoneAbbreviation: string
   current: {
     time: Date
     temperature: number
+    is_day: number
     humidity: number
     real_feel: number
     wind_speed: number
@@ -12,9 +16,11 @@ export type WeatherData = {
     | {
         date: Date
         temperature: number | null | undefined
+        is_day: number | null | undefined
         weather_code: number | null | undefined
       }[]
     | null
+    | undefined
   daily:
     | {
         date: Date
@@ -23,6 +29,7 @@ export type WeatherData = {
         weather_code: number | null | undefined
       }[]
     | null
+    | undefined
 }
 
 export type Location = {
