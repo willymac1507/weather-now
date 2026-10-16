@@ -1,6 +1,6 @@
 const myWeatherCodes = [
   {
-    range: [0, 0],
+    range: [0],
     iconDay: '/icons/icon-sun.png',
     iconNight: '/icons/icon-moon.png',
   },
@@ -10,7 +10,7 @@ const myWeatherCodes = [
     iconNight: '/icons/icon-partly-night.png',
   },
   {
-    range: [3, 3],
+    range: [3],
     iconDay: '/icons/icon-overcast.png',
     iconNight: '/icons/icon-overcast.png',
   },
@@ -20,7 +20,7 @@ const myWeatherCodes = [
     iconNight: '/icons/icon-fog-night.png',
   },
   {
-    range: [51, 57],
+    range: [51, 53, 55, 56, 57],
     iconDay: '/icons/icon-drizzle.png',
     iconNight: '/icons/icon-drizzle.png',
   },
@@ -30,7 +30,7 @@ const myWeatherCodes = [
     iconNight: '/icons/icon-light-rain.png',
   },
   {
-    range: [65, 65],
+    range: [65],
     iconDay: '/icons/icon-heavy-rain.png',
     iconNight: '/icons/icon-heavy-rain.png',
   },
@@ -55,17 +55,17 @@ const myWeatherCodes = [
     iconNight: '/icons/icon-light-rain.png',
   },
   {
-    range: [82, 82],
+    range: [82],
     iconDay: '/icons/icon-heavy-rain.png',
     iconNight: '/icons/icon-heavy-rain.png',
   },
   {
-    range: [85, 85],
+    range: [85],
     iconDay: '/icons/icon-light-snow.png',
     iconNight: '/icons/icon-light-snow.png',
   },
   {
-    range: [86, 86],
+    range: [86],
     iconDay: '/icons/icon-heavy-snow.png',
     iconNight: '/icons/icon-heavy-snow.png',
   },
@@ -80,7 +80,7 @@ const myWeatherCodes = [
     iconNight: '/icons/icon-heavy-thunder.png',
   },
   {
-    range: [100, 100],
+    range: [100],
     iconDay: '/icons/icon-no-data.png',
     iconNight: '/icons/icon-no-data.png',
   },

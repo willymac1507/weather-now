@@ -1,11 +1,15 @@
 import { fetchWeatherApi } from 'openmeteo'
 import type { LocationArray, WeatherData } from '@/Types/API.ts'
 
-export async function getWeather(lat: number, lng: number): Promise<WeatherData> {
+export async function getWeather(
+  lat: number,
+  lng: number,
+  emit: (event: 'error', error: unknown) => void,
+): Promise<WeatherData> {
   const params = {
     latitude: lat,
     longitude: lng,
-    hourly: ['temperature_2m', 'is_day', 'weather_code'],
+    hourly: ['temperature_m', 'is_day', 'weather_code'],
     current: [
       'temperature_2m',
       'is_day',
@@ -20,10 +24,15 @@ export async function getWeather(lat: number, lng: number): Promise<WeatherData>
     forecast_days: 8,
   }
   const url = 'https://api.open-meteo.com/v1/forecast'
-  const responses = await fetchWeatherApi(url, params)
+  let response = null
+  try {
+    const responses = await fetchWeatherApi(url, params)
+    response = responses[0]
+  } catch (error) {
+    emit('error', error)
+  }
 
   // Process first location. Add a for-loop for multiple locations or weather models
-  const response = responses[0]
 
   // Attributes for timezone and location
   const latitude = response ? response.latitude() : null

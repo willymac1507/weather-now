@@ -10,6 +10,8 @@ import type { Location, LocationArray, WeatherData } from '@/Types/API.ts'
 import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
 import { format } from 'date-fns'
 
+const emit = defineEmits(['error'])
+
 const searchField = ref()
 const results = ref<LocationArray>()
 const error = ref()
@@ -63,7 +65,7 @@ async function selectLocation(location: Location) {
   myLocation.value = searchField.value
   results.value = undefined
   loading.value = true
-  await getWeather(location.lat, location.lon).then((data) => {
+  await getWeather(location.lat, location.lon, emit).then((data) => {
     if (!data) {
     } else {
       weather.value = data
@@ -75,16 +77,16 @@ async function selectLocation(location: Location) {
 
 <template>
   <!--  Loading Overlay-->
-  <div
-    v-if="loading"
-    id="loading-overlay"
-    class="fixed inset-0 w-full h-full bg-black opacity-70 flex justify-center items-center z-9999 pointer-events-none transition-opacity duration-300 ease-in-out"
-  >
-    <!-- Spinner -->
-    <div
-      class="w-12.5 h-12.5 border-[5px] border-gray-500 border-t-blue-400 rounded-full animate-spin"
-    ></div>
-  </div>
+  <!--  <div-->
+  <!--    v-if="loading"-->
+  <!--    id="loading-overlay"-->
+  <!--    class="fixed inset-0 w-full h-full bg-black opacity-70 flex justify-center items-center z-9999 pointer-events-none transition-opacity duration-300 ease-in-out"-->
+  <!--  >-->
+  <!--    &lt;!&ndash; Spinner &ndash;&gt;-->
+  <!--    <div-->
+  <!--      class="w-12.5 h-12.5 border-[5px] border-gray-500 border-t-blue-400 rounded-full animate-spin"-->
+  <!--    ></div>-->
+  <!--  </div>-->
   <!--  Search Field -->
   <div class="w-full flex flex-row justify-center gap-4 h-14 mb-12">
     <div
