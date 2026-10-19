@@ -5,12 +5,30 @@ import DesktopConditionsCard from '@/Components/UI/DesktopConditionsCard.vue'
 import DesktopDailyCard from '@/Components/UI/DesktopDailyCard.vue'
 import DesktopHourlyCard from '@/Components/UI/DesktopHourlyCard.vue'
 import { getLocation, getWeather } from '@/Composables/GetWeatherData.ts'
-import { computed, type Ref, ref, type UnwrapRef } from 'vue'
+import { computed, type Ref, ref, type UnwrapRef, watch } from 'vue'
 import type { Location, LocationArray, WeatherData } from '@/Types/API.ts'
 import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
 import { format } from 'date-fns'
 
+interface Props {
+  metric: boolean
+}
+const props = defineProps<Props>()
+
+watch(
+  () => props.metric,
+  () => {
+    if (locationObject.value) {
+      selectLocation(locationObject.value)
+    }
+  },
+)
+
 const emit = defineEmits(['error'])
+
+const units = ref('metric')
+const speedUnit = computed(() => (units.value === 'metric' ? ' km/h' : ' mph'))
+const volUnit = computed(() => (units.value === 'metric' ? ' mm' : ' in'))
 
 const searchField = ref()
 const results = ref<LocationArray>()
@@ -20,7 +38,8 @@ const weather: Ref<UnwrapRef<WeatherData> | null> = ref(null)
 const current = computed(() => weather.value?.current)
 const hourly = computed(() => weather.value?.hourly)
 const daily = computed(() => weather.value?.daily)
-const myLocation = ref('Berlin, DE')
+const locationObject = ref()
+const myLocation = ref()
 const todaysDate = computed(() =>
   current.value
     ? new Date(current.value.time).toLocaleDateString('en-GB', {
@@ -37,9 +56,9 @@ const currentDateTime = computed(
 )
 const loading = ref(true)
 
-const isItDayTime = ref(false)
+const isItDayTime = computed(() => (current.value ? current.value.is_day : false))
 
-const promises = [weather]
+const promises = [weather, results]
 
 Promise.allSettled(promises).then(() => {
   loading.value = false
@@ -61,16 +80,19 @@ async function searchLocation() {
 }
 
 async function selectLocation(location: Location) {
+  locationObject.value = location
   searchField.value = `${location.name}, ${location.country}`
   myLocation.value = searchField.value
   results.value = undefined
   loading.value = true
-  await getWeather(location.lat, location.lon, emit).then((data) => {
+  await getWeather(location.lat, location.lon, emit, props.metric).then((data) => {
     if (!data) {
     } else {
       weather.value = data
     }
-    loading.value = false
+    setTimeout(() => {
+      loading.value = false
+    }, 5000)
   })
 }
 </script>
@@ -133,6 +155,7 @@ async function selectLocation(location: Location) {
       <!-- Hero -->
       <DesktopHero
         :icon-url="getWeatherIcon(current?.weather_code, !isItDayTime) ?? '/icons/no-data.png'"
+        :loading="loading"
       >
         <template #location>{{ myLocation }}</template>
         <template #date>{{ todaysDate }}</template>
@@ -143,19 +166,19 @@ async function selectLocation(location: Location) {
       <div class="flex flex-row gap-8 max-w-200 h-29.5 mb-2.5">
         <DesktopConditionsCard>
           <template #heading>Feels Like</template>
-          {{ current ? Math.round(current.real_feel) : null }}°
+          <div>{{ !loading && current ? Math.round(current.real_feel) + '°' : '--' }}</div>
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Humidity</template>
-          {{ current ? Math.round(current.humidity) : null }}%
+          {{ !loading && current ? Math.round(current.humidity) + '%' : '--' }}
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Wind</template>
-          {{ current ? Math.round(current.wind_speed) : null }} km/h
+          {{ !loading && current ? Math.round(current.wind_speed) + speedUnit : '--' }}
         </DesktopConditionsCard>
         <DesktopConditionsCard>
           <template #heading>Precipitation</template>
-          {{ current ? Math.round(current.precipitation) : null }} mm
+          {{ !loading && current ? Math.round(current.precipitation) + volUnit : '--' }}
         </DesktopConditionsCard>
       </div>
       <!-- Daily Forecast -->
@@ -164,6 +187,7 @@ async function selectLocation(location: Location) {
         <div v-for="day in daily" :key="format(day.date, 't')" class="grow">
           <DesktopDailyCard
             :icon-url="getWeatherIcon(day.weather_code, false) ?? '/icons/no-data.png'"
+            :loading="loading"
           >
             <template #day>{{ format(day.date, 'iii') }}</template>
             <template #maxTemp
@@ -179,10 +203,10 @@ async function selectLocation(location: Location) {
     <!-- Hourly Forecast -->
     <div class="grow">
       <DesktopHourlyCard
-        v-model="isItDayTime"
         :currentDate="currentDateTime"
         :hourly="hourly"
         :isNight="!isItDayTime"
+        :loading="loading"
       />
     </div>
   </div>

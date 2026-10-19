@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import ButtonComponent from '@/Components/UI/ButtonComponent.vue'
-import HourForecast from '@/Components/UI/HourForecast.vue'
 import { computed, ref } from 'vue'
 import type { WeatherData } from '@/Types/API.ts'
 import { addDays, format, isSameDay } from 'date-fns'
@@ -10,6 +9,7 @@ interface Props {
   hourly: WeatherData['hourly']
   currentDate: Date
   isNight: boolean
+  loading: boolean
 }
 
 const model = defineModel<boolean>()
@@ -33,9 +33,10 @@ const hours = computed(() => {
   const result: WeatherData['hourly'] =
     props.hourly?.filter((hour) =>
       isSameDay(props.currentDate, selectedDay.value)
-        ? hour.date > props.currentDate && isSameDay(hour.date, selectedDay.value)
+        ? hour.date > props.currentDate
         : isSameDay(hour.date, selectedDay.value),
     ) ?? []
+  result.length = 24
   return result
 })
 
@@ -58,7 +59,7 @@ function selectDay(date: Date) {
     <div class="relative flex flex-row justify-between items-center w-full h-9.25">
       <div class="text-preset-5">Hourly Forecast</div>
       <ButtonComponent class="bg-neutral-600! basis-5/12" @click="changeDay">
-        <div>{{ format(selectedDay, 'EEEE') }}</div>
+        <div>{{ !loading ? format(selectedDay, 'EEEE') : '-' }}</div>
         <div>
           <img alt="" src="/images/icon-dropdown.svg" />
         </div>
@@ -74,18 +75,29 @@ function selectDay(date: Date) {
             type="button"
             @click="selectDay(day)"
           >
-            <span class="block font-medium text-neutral-0"> {{ day }} </span>
+            <span class="block font-medium text-neutral-0"> {{ format(day, 'EEEE, d MMM') }} </span>
           </button>
         </li>
       </ul>
     </div>
     <div class="overflow-y-scroll flex flex-col gap-2.5">
       <div v-for="hour in hours" :key="format(hour.date, 'T')">
-        <HourForecast
-          :iconUrl="getWeatherIcon(hour.weather_code ?? 0, isNight) ?? '/icons/no-data.png'"
-          :temp="Math.ceil(hour.temperature ?? 20)"
-          :time="format(hour.date, 'HH:mm')"
-        />
+        <div
+          class="bg-neutral-700 border border-neutral-600 w-full h-15 rounded-8 pl-3 pr-4 py-2.5"
+        >
+          <div
+            v-if="!loading"
+            class="flex flex-row gap-2 justify-between items-center w-full h-full"
+          >
+            <img
+              :src="getWeatherIcon(hour.weather_code ?? 0, !hour.is_day) ?? '/icons/no-data.png'"
+              alt="Weather Icon"
+              class="h-full"
+            />
+            <div class="grow text-preset-5m">{{ format(hour.date, 'HH:mm') }}</div>
+            <div class="text-preset-7">{{ Math.ceil(hour.temperature ?? 20) }}°</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

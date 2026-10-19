@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import ButtonComponent from '@/Components/UI/ButtonComponent.vue'
 
 const hasError = ref(false)
+const metric = ref(true)
 
 function alertError() {
   hasError.value = true
@@ -17,10 +18,10 @@ function refreshPage() {
 
 <template>
   <div class="w-screen h-280 px-28 py-12 bg-neutral-900 text-neutral-0">
-    <DesktopNav />
+    <DesktopNav v-model="metric" />
     <DesktopHeader v-if="!hasError" />
     <Suspense>
-      <DesktopContent v-if="!hasError" @error="alertError" />
+      <DesktopContent v-if="!hasError" :metric="metric" @error="alertError" />
     </Suspense>
     <div v-if="hasError" class="flex flex-col justify-center items-center w-full mt-8 gap-6">
       <div><img alt="Error" class="w-13 h-13" src="/images/icon-error.svg" /></div>

@@ -115,6 +115,22 @@
   letter-spacing: 0;
 }
 
+.dropdown-heading {
+  @apply px-2 text-preset-8 text-neutral-300 w-full
+}
+
+.dropdown-item-active {
+  @apply rounded-8 p-2 w-full bg-neutral-700 flex flex-row justify-between
+}
+
+.dropdown-item-active::after {
+  content: url("../public/images/icon-checkmark.svg");
+}
+
+.dropdown-item-inactive {
+  @apply p-2
+}
+
 #loading-overlay {
   pointer-events: all;
 }

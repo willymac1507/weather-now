@@ -1,15 +1,29 @@
 import { fetchWeatherApi } from 'openmeteo'
 import type { LocationArray, WeatherData } from '@/Types/API.ts'
 
+interface WeatherParams {
+  latitude: number
+  longitude: number
+  hourly: string[]
+  current: string[]
+  daily: string[]
+  timezone: string
+  forecast_days: number
+  wind_speed_unit?: string
+  temperature_unit?: string
+  precipitation_unit?: string
+}
+
 export async function getWeather(
   lat: number,
   lng: number,
   emit: (event: 'error', error: unknown) => void,
+  metric: boolean,
 ): Promise<WeatherData> {
-  const params = {
+  const params: WeatherParams = {
     latitude: lat,
     longitude: lng,
-    hourly: ['temperature_m', 'is_day', 'weather_code'],
+    hourly: ['temperature_2m', 'is_day', 'weather_code'],
     current: [
       'temperature_2m',
       'is_day',
@@ -23,6 +37,12 @@ export async function getWeather(
     timezone: 'auto',
     forecast_days: 8,
   }
+  if (!metric) {
+    params.temperature_unit = 'fahrenheit'
+    params.precipitation_unit = 'inch'
+    params.wind_speed_unit = 'mph'
+  }
+  params.wind_speed_unit = 'mph'
   const url = 'https://api.open-meteo.com/v1/forecast'
   let response = null
   try {
@@ -56,7 +76,7 @@ export async function getWeather(
           ),
       )
     : null
-
+  console.log(current?.time())
   const hourlyTemps: number[] | null = hourly ? makeArray(hourly.variables(0)!.valuesArray()) : null
 
   const hourlyIsDay: number[] | null = hourly ? makeArray(hourly.variables(1)!.valuesArray()) : null
@@ -119,7 +139,7 @@ export async function getWeather(
     current: current
       ? {
           time: new Date(
-            (Number(current.time()) + (utcOffsetSeconds ? utcOffsetSeconds : 0)) * 1000,
+            (Number(current.time()) + (utcOffsetSeconds ? utcOffsetSeconds - 3600 : 0)) * 1000,
           ),
           temperature: current.variables(0)!.value(),
           is_day: current.variables(1)!.value(),
