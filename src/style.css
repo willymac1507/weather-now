@@ -52,6 +52,10 @@
   --radius-full: 9999px;
 }
 
+.bg-hero {
+  background-image: url('../public/images/bg-today-large.svg');
+}
+
 .text-preset-1 {
   font-weight: 600;
   font-style: italic;

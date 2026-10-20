@@ -26,9 +26,8 @@ watch(
 
 const emit = defineEmits(['error'])
 
-const units = ref('metric')
-const speedUnit = computed(() => (units.value === 'metric' ? ' km/h' : ' mph'))
-const volUnit = computed(() => (units.value === 'metric' ? ' mm' : ' in'))
+const speedUnit = computed(() => (props.metric ? ' km/h' : ' mph'))
+const volUnit = computed(() => (props.metric ? ' mm' : ' in'))
 
 const searchField = ref()
 const results = ref<LocationArray>()
@@ -90,30 +89,15 @@ async function selectLocation(location: Location) {
     } else {
       weather.value = data
     }
-    setTimeout(() => {
-      loading.value = false
-    }, 5000)
+    loading.value = false
   })
 }
 </script>
 
 <template>
-  <!--  Loading Overlay-->
-  <!--  <div-->
-  <!--    v-if="loading"-->
-  <!--    id="loading-overlay"-->
-  <!--    class="fixed inset-0 w-full h-full bg-black opacity-70 flex justify-center items-center z-9999 pointer-events-none transition-opacity duration-300 ease-in-out"-->
-  <!--  >-->
-  <!--    &lt;!&ndash; Spinner &ndash;&gt;-->
-  <!--    <div-->
-  <!--      class="w-12.5 h-12.5 border-[5px] border-gray-500 border-t-blue-400 rounded-full animate-spin"-->
-  <!--    ></div>-->
-  <!--  </div>-->
-  <!--  Search Field -->
   <div class="w-full flex flex-row justify-center gap-4 h-14 mb-12">
     <div
-      :class="{ 'rounded-b-xl': !showDropdown }"
-      class="bg-neutral-700 text-neutral-0 relative rounded-t-xl basis-lg px-6 py-4 flex flex-row gap-4 justify-start focus-within:ring-2 focus-within:ring-blue-500/80"
+      class="bg-neutral-700 text-neutral-0 relative rounded-xl basis-lg px-6 py-4 flex flex-row gap-4 justify-start focus-within:ring-2 focus-within:ring-blue-500/80"
     >
       <img alt="search" src="/images/icon-search.svg" />
       <input
@@ -126,7 +110,7 @@ async function selectLocation(location: Location) {
       <!--      Search Results Dropdown-->
       <ul
         v-if="showDropdown"
-        class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full z-50 overflow-hidden rounded-b-xl"
+        class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full mt-2 z-50 overflow-hidden rounded-xl"
       >
         <li v-for="result in results" :key="result.lat">
           <button
@@ -144,7 +128,7 @@ async function selectLocation(location: Location) {
       </ul>
     </div>
     <ButtonComponent
-      class="bg-blue-500! text-neutral-0 text-preset-5m! rounded-xl"
+      class="bg-blue-500! hover:bg-blue-700! text-neutral-0 text-preset-5m! rounded-xl"
       @click="searchLocation"
       >Search
     </ButtonComponent>

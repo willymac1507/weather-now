@@ -11,7 +11,7 @@ defineProps<Props>()
 
 <template>
   <div
-    :class="loading ? 'bg-neutral-800' : 'bg-[url(\'/images/bg-today-large.svg\')]'"
+    :class="loading ? 'bg-neutral-800' : 'bg-hero'"
     class="py-20 px-6 mb-8 w-full min-h-71.5 bg-cover bg-center p-4 rounded-20"
   >
     <div v-if="loading" class="flex flex-col justify-center items-center h-full">
