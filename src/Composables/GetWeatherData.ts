@@ -158,7 +158,7 @@ export async function getWeather(
 export async function getLocation(location: string): Promise<LocationArray> {
   const url = 'https://api.openweathermap.org/geo/1.0/direct?q='
   const city = location
-  const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
+  const apiKey = '3f4da71600113a9a3177a51a77946747'
   try {
     const response = await fetch(`${url}${city}&limit=5&appid=${apiKey}`)
 
