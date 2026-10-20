@@ -1,5 +1,5 @@
 import { fetchWeatherApi } from 'openmeteo'
-import type { LocationArray, WeatherData } from '@/Types/API.ts'
+import type { GeolocationResults, WeatherData } from '@/Types/API.ts'
 
 interface WeatherParams {
   latitude: number
@@ -12,6 +12,13 @@ interface WeatherParams {
   wind_speed_unit?: string
   temperature_unit?: string
   precipitation_unit?: string
+}
+
+interface LocationParams {
+  name: string
+  count: number
+  language: string
+  format: string
 }
 
 export async function getWeather(
@@ -42,7 +49,7 @@ export async function getWeather(
     params.precipitation_unit = 'inch'
     params.wind_speed_unit = 'mph'
   }
-  params.wind_speed_unit = 'mph'
+
   const url = 'https://api.open-meteo.com/v1/forecast'
   let response = null
   try {
@@ -155,12 +162,17 @@ export async function getWeather(
   }
 }
 
-export async function getLocation(location: string): Promise<LocationArray> {
-  const url = 'https://api.openweathermap.org/geo/1.0/direct?q='
-  const city = location
-  const apiKey = '3f4da71600113a9a3177a51a77946747'
+export async function getLocation(location: string): Promise<GeolocationResults> {
+  const params: LocationParams = {
+    name: location,
+    count: 5,
+    language: 'en',
+    format: 'json',
+  }
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${params.name}&count=${params.count}&language=${params.language}&format=${params.format}`
+
   try {
-    const response = await fetch(`${url}${city}&limit=5&appid=${apiKey}`)
+    const response = await fetch(url)
 
     return await response.json()
   } catch (error) {

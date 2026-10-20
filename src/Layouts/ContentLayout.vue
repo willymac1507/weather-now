@@ -6,7 +6,7 @@ import DailyCard from '@/Components/UI/DailyCard.vue'
 import HourlyCard from '@/Components/UI/HourlyCard.vue'
 import { getLocation, getWeather } from '@/Composables/GetWeatherData.ts'
 import { computed, type Ref, ref, type UnwrapRef, watch } from 'vue'
-import type { Location, LocationArray, WeatherData } from '@/Types/API.ts'
+import type { GeolocationResults, Location, LocationArray, WeatherData } from '@/Types/API.ts'
 import { getWeatherIcon } from '@/Composables/weatherCodes.ts'
 import { format } from 'date-fns'
 
@@ -31,7 +31,7 @@ const volUnit = computed(() => (props.metric ? ' mm' : ' in'))
 
 const searchField = ref()
 const results = ref<LocationArray>()
-const error = ref()
+const error = ref<String>()
 const showDropdown = computed(() => (results.value ? results.value.length > 0 : false))
 const weather: Ref<UnwrapRef<WeatherData> | null> = ref(null)
 const current = computed(() => weather.value?.current)
@@ -57,7 +57,7 @@ const loading = ref(true)
 
 const isItDayTime = computed(() => (current.value ? current.value.is_day : false))
 
-const promises = [weather, results]
+const promises = [searchLocation, selectLocation]
 
 Promise.allSettled(promises).then(() => {
   loading.value = false
@@ -65,14 +65,15 @@ Promise.allSettled(promises).then(() => {
 
 async function searchLocation() {
   if (searchField.value) {
-    error.value = null
-    await getLocation(searchField.value).then((data) => {
-      if (data.length < 1) {
-        error.value = 'No results found'
-      } else {
-        results.value = data
-      }
-    })
+    let data: GeolocationResults
+    try {
+      data = await getLocation(searchField.value)
+      results.value = data.results
+      error.value = undefined
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Unknown error'
+      results.value = []
+    }
   } else {
     error.value = 'Please enter a location'
   }
@@ -80,11 +81,11 @@ async function searchLocation() {
 
 async function selectLocation(location: Location) {
   locationObject.value = location
-  searchField.value = `${location.name}, ${location.country}`
+  searchField.value = `${location.name}, ${location.country_code}`
   myLocation.value = searchField.value
   results.value = undefined
   loading.value = true
-  await getWeather(location.lat, location.lon, emit, props.metric).then((data) => {
+  await getWeather(location.latitude, location.longitude, emit, props.metric).then((data) => {
     if (!data) {
     } else {
       weather.value = data
@@ -112,16 +113,15 @@ async function selectLocation(location: Location) {
         v-if="showDropdown"
         class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full mt-2 z-50 overflow-hidden rounded-xl"
       >
-        <li v-for="result in results" :key="result.lat">
+        <li v-for="result in results" :key="result.latitude">
           <button
             class="w-full px-4 py-3 text-left hover:bg-neutral-600"
             type="button"
             @click="selectLocation(result)"
           >
             <span class="font-medium text-neutral-0"> {{ result.name }} </span>
-            <span v-if="result.state" class="text-sm text-neutral-200"> - {{ result.state }} </span>
-            <span v-if="result.country" class="text-sm text-neutral-300">
-              - {{ result.country }}
+            <span v-if="result.country_code" class="text-sm text-neutral-300">
+              - {{ result.country_code }}
             </span>
           </button>
         </li>
@@ -183,10 +183,18 @@ async function selectLocation(location: Location) {
           >
             <template #day>{{ format(day.date, 'iii') }}</template>
             <template #maxTemp
-              >{{ day.temperature_max ? Math.round(day.temperature_max) : '' }}°</template
+              >{{
+                day.temperature_max && typeof day.temperature_max === 'number'
+                  ? Math.round(day.temperature_max)
+                  : ''
+              }}°</template
             >
             <template #minTemp
-              >{{ day.temperature_min ? Math.round(day.temperature_min) : '' }}°</template
+              >{{
+                day.temperature_min && typeof day.temperature_max === 'number'
+                  ? Math.round(day.temperature_min)
+                  : ''
+              }}°</template
             >
           </DailyCard>
         </div>

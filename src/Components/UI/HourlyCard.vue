@@ -36,7 +36,7 @@ const hours = computed(() => {
         ? hour.date > props.currentDate
         : isSameDay(hour.date, selectedDay.value),
     ) ?? []
-  result.length = 24
+  result.slice(0, 24)
   return result
 })
 
