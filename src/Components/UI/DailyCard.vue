@@ -9,7 +9,7 @@ defineProps<Props>()
 
 <template>
   <div
-    class="flex flex-col grow items-center justify-between px-4 py-2.5 h-full max-w-25 rounded-xl bg-neutral-800"
+    class="flex flex-col md:grow items-center justify-between px-4 py-2.5 h-full min-h-41.25 rounded-xl bg-neutral-800"
   >
     <div v-if="!loading" class="text-preset-6">
       <slot name="day" />

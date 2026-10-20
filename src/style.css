@@ -50,6 +50,8 @@
   --radius-20: 20px;
   --radius-24: 24px;
   --radius-full: 9999px;
+  /*Breakpoints*/
+  --breakpoint-xs: 480px;
 }
 
 .bg-hero {

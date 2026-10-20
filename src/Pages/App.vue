@@ -1,11 +1,9 @@
 <script lang="ts" setup>
-import DesktopLayout from '@/Layouts/DesktopLayout.vue'
+import MainLayout from '@/Layouts/MainLayout.vue'
 </script>
 
 <template>
-  <DesktopLayout>
-    <div class="text-preset-2">You did it!</div>
-  </DesktopLayout>
+  <MainLayout />
 </template>
 
 <style scoped></style>

@@ -45,7 +45,7 @@ if (hours.value[0]) {
 }
 
 function changeDay() {
-  dayDropdown.value = true
+  dayDropdown.value = !dayDropdown.value
 }
 
 function selectDay(date: Date) {
@@ -55,19 +55,19 @@ function selectDay(date: Date) {
 </script>
 
 <template>
-  <div class="flex flex-col bg-neutral-800 rounded-20 h-full w-full p-6 gap-2.5">
+  <div class="flex flex-col bg-neutral-800 rounded-20 max-h-173.25 lg:h-full w-full p-6 gap-4">
     <div class="relative flex flex-row justify-between items-center w-full h-9.25">
       <div class="text-preset-5">Hourly Forecast</div>
       <ButtonComponent class="bg-neutral-600! basis-5/12" @click="changeDay">
         <div>{{ !loading ? format(selectedDay, 'EEEE') : '-' }}</div>
         <div>
-          <img alt="" src="/images/icon-dropdown.svg" />
+          <img :class="dayDropdown ? 'rotate-180' : ''" alt="" src="/images/icon-dropdown.svg" />
         </div>
       </ButtonComponent>
 
       <ul
         v-if="dayDropdown"
-        class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full z-50 overflow-hidden rounded-b-xl"
+        class="bg-neutral-700 text-neutral-0 px-6 py-4 absolute left-0 right-0 top-full mt-2 z-50 overflow-hidden rounded-b-xl"
       >
         <li v-for="day in dropdownDays" :key="day">
           <button
@@ -80,7 +80,7 @@ function selectDay(date: Date) {
         </li>
       </ul>
     </div>
-    <div class="overflow-y-scroll flex flex-col gap-2.5">
+    <div class="overflow-y-scroll flex flex-col gap-4">
       <div v-for="hour in hours" :key="format(hour.date, 'T')">
         <div
           class="bg-neutral-700 border border-neutral-600 w-full h-15 rounded-8 pl-3 pr-4 py-2.5"

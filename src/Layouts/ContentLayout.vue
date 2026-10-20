@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import ButtonComponent from '@/Components/UI/ButtonComponent.vue'
-import DesktopHero from '@/Components/DesktopHero.vue'
-import DesktopConditionsCard from '@/Components/UI/DesktopConditionsCard.vue'
-import DesktopDailyCard from '@/Components/UI/DesktopDailyCard.vue'
-import DesktopHourlyCard from '@/Components/UI/DesktopHourlyCard.vue'
+import HeroComponent from '@/Components/HeroComponent.vue'
+import ConditionsCard from '@/Components/UI/ConditionsCard.vue'
+import DailyCard from '@/Components/UI/DailyCard.vue'
+import HourlyCard from '@/Components/UI/HourlyCard.vue'
 import { getLocation, getWeather } from '@/Composables/GetWeatherData.ts'
 import { computed, type Ref, ref, type UnwrapRef, watch } from 'vue'
 import type { Location, LocationArray, WeatherData } from '@/Types/API.ts'
@@ -95,9 +95,9 @@ async function selectLocation(location: Location) {
 </script>
 
 <template>
-  <div class="w-full flex flex-row justify-center gap-4 h-14 mb-12">
+  <div class="w-full flex flex-row justify-center gap-4 h-14 lg:mb-12 mb-8">
     <div
-      class="bg-neutral-700 text-neutral-0 relative rounded-xl basis-lg px-6 py-4 flex flex-row gap-4 justify-start focus-within:ring-2 focus-within:ring-blue-500/80"
+      class="bg-neutral-700 text-neutral-0 relative rounded-xl basis-lg grow lg:grow-0 px-6 py-4 flex flex-row gap-4 justify-start focus-within:ring-2 focus-within:ring-blue-500/80"
     >
       <img alt="search" src="/images/icon-search.svg" />
       <input
@@ -134,42 +134,50 @@ async function selectLocation(location: Location) {
     </ButtonComponent>
   </div>
   <!-- Main Content -->
-  <div v-if="weather" class="w-full max-w-304 flex flex-row gap-8 justify-center max-h-164">
-    <div class="basis-2/3 flex flex-col max-w-200">
+  <div
+    v-if="weather"
+    class="w-full lg:max-w-304 flex lg:flex-row gap-8 lg:justify-center max-w-full flex-col justify-start grow"
+  >
+    <div class="lg:basis-2/3 grow flex flex-col lg:gap-5">
       <!-- Hero -->
-      <DesktopHero
+      <HeroComponent
         :icon-url="getWeatherIcon(current?.weather_code, !isItDayTime) ?? '/icons/no-data.png'"
         :loading="loading"
       >
         <template #location>{{ myLocation }}</template>
         <template #date>{{ todaysDate }}</template>
         <template #temperature>{{ current ? Math.round(current.temperature) : null }}°</template>
-      </DesktopHero>
+      </HeroComponent>
 
       <!-- Current Conditions -->
-      <div class="flex flex-row gap-8 max-w-200 h-29.5 mb-2.5">
-        <DesktopConditionsCard>
+      <div
+        class="grow flex justify-between flex-row flex-wrap lg:flex-nowrap lg:gap-8 gap-4 min-h-29.5 mb-2.5"
+      >
+        <ConditionsCard>
           <template #heading>Feels Like</template>
           <div>{{ !loading && current ? Math.round(current.real_feel) + '°' : '--' }}</div>
-        </DesktopConditionsCard>
-        <DesktopConditionsCard>
+        </ConditionsCard>
+        <ConditionsCard>
           <template #heading>Humidity</template>
           {{ !loading && current ? Math.round(current.humidity) + '%' : '--' }}
-        </DesktopConditionsCard>
-        <DesktopConditionsCard>
+        </ConditionsCard>
+        <ConditionsCard>
           <template #heading>Wind</template>
           {{ !loading && current ? Math.round(current.wind_speed) + speedUnit : '--' }}
-        </DesktopConditionsCard>
-        <DesktopConditionsCard>
+        </ConditionsCard>
+        <ConditionsCard>
           <template #heading>Precipitation</template>
           {{ !loading && current ? Math.round(current.precipitation) + volUnit : '--' }}
-        </DesktopConditionsCard>
+        </ConditionsCard>
       </div>
       <!-- Daily Forecast -->
-      <p class="text-preset-5 mb-5">Daily forecast</p>
-      <div v-if="daily" class="flex flex-row gap-4 h-41.25">
-        <div v-for="day in daily" :key="format(day.date, 't')" class="grow">
-          <DesktopDailyCard
+      <p class="text-preset-5 mb-5 mt-5 lg:mt-0">Daily forecast</p>
+      <div
+        v-if="daily"
+        class="grow flex flex-row md:flex-nowrap flex-wrap justify-between gap-2 lg:gap-4 min-h-41.25 max-w-full"
+      >
+        <div v-for="day in daily" :key="format(day.date, 't')" class="md:grow grow-0">
+          <DailyCard
             :icon-url="getWeatherIcon(day.weather_code, false) ?? '/icons/no-data.png'"
             :loading="loading"
           >
@@ -180,13 +188,13 @@ async function selectLocation(location: Location) {
             <template #minTemp
               >{{ day.temperature_min ? Math.round(day.temperature_min) : '' }}°</template
             >
-          </DesktopDailyCard>
+          </DailyCard>
         </div>
       </div>
     </div>
     <!-- Hourly Forecast -->
-    <div class="grow">
-      <DesktopHourlyCard
+    <div class="">
+      <HourlyCard
         :currentDate="currentDateTime"
         :hourly="hourly"
         :isNight="!isItDayTime"
